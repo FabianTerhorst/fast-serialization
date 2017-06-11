@@ -23,29 +23,44 @@ import java.io.InputStream;
  */
 public interface FSTDecoder {
 
-    void setConf( FSTConfiguration conf );
+    void setConf(FSTConfiguration conf);
+
     String readStringUTF() throws IOException;
+
     String readStringAsc() throws IOException;
+
     Object readFPrimitiveArray(Object array, Class componentType, int len);
+
     void readFIntArr(int len, int[] arr) throws IOException;
+
     int readFInt() throws IOException;
+
     double readFDouble() throws IOException;
+
     float readFFloat() throws IOException;
+
     byte readFByte() throws IOException;
+
     int readIntByte() throws IOException;
+
     long readFLong() throws IOException;
+
     char readFChar() throws IOException;
+
     short readFShort() throws IOException;
+
     int readPlainInt() throws IOException;
 
-    byte[] getBuffer();
     int getInputPos();
+
     void moveTo(int position);
+
     void setInputStream(InputStream in);
+
     int ensureReadAhead(int bytes); // might signal eof by returning -1, depends on decoder impl though
 
     void reset();
-    void resetToCopyOf(byte[] bytes, int off, int len);
+
     void resetWith(byte[] bytes, int len);
 
     FSTClazzInfo readClass() throws IOException, ClassNotFoundException;
@@ -53,12 +68,15 @@ public interface FSTDecoder {
     Class classForName(String name) throws ClassNotFoundException;
 
     void registerClass(Class possible);
+
     void close();
 
     void skip(int n);
+
     void readPlainBytes(byte[] b, int off, int len);
 
     byte readObjectHeaderTag() throws IOException;
+
     int getObjectHeaderLen(); // len field of last header read (if avaiable)
 
     boolean isMapBased();
@@ -91,13 +109,6 @@ public interface FSTDecoder {
      * @return a value > 0 if more bytes are available
      */
     int available();
-
-    /**
-     * return wether current stream is reading an object or sequence currently
-     * makes sense for MinBin and JSon only, only Json serializer actually has implemented it
-     * @return
-     */
-    boolean inArray();
 
     /**
      * quirks for json unknown decoding. Need a hook to set original classname

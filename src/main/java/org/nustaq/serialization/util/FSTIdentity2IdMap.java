@@ -29,15 +29,15 @@ import java.util.List;
 public class FSTIdentity2IdMap {
     private static final int RESERVE = 4;
     private static final int MAX_DEPTH = 4;
-    static int[] prim = {
-                            3, 5, 7, 11, 13, 17, 19, 23, 29, 37, 67, 97, 139,
-                            211, 331, 641, 1097, 1531, 2207, 3121, 5059, 7607, 10891,
-                            15901, 19993, 30223, 50077, 74231, 99991, 150001, 300017,
-                            1000033, 1500041, 200033, 3000077, 5000077, 10000019
+    private static final int[] prim = {
+            3, 5, 7, 11, 13, 17, 19, 23, 29, 37, 67, 97, 139,
+            211, 331, 641, 1097, 1531, 2207, 3121, 5059, 7607, 10891,
+            15901, 19993, 30223, 50077, 74231, 99991, 150001, 300017,
+            1000033, 1500041, 200033, 3000077, 5000077, 10000019
 
     };
 
-    static int adjustSize(int size) {
+    private static int adjustSize(int size) {
         for (int i = 0; i < prim.length - 1; i++) {
             if (size < prim[i]) {
                 return prim[i] + RESERVE;
@@ -49,12 +49,12 @@ public class FSTIdentity2IdMap {
     private static final int GROFAC = 2;
 
     private int mask;
-    public Object[] mKeys;
+    private Object[] mKeys;
     private int klen;
     private int mValues[];
     private int mNumberOfElements;
     private FSTIdentity2IdMap next;
-    private List linearScanList; // in case of too deep nesting, this one is filled and linear search is applied
+    private List<Object> linearScanList; // in case of too deep nesting, this one is filled and linear search is applied
     private List<Integer> linearScanVals; // in case of too deep nesting, this one is filled and linear search is applied
 
     public FSTIdentity2IdMap(int initialSize) {
@@ -72,7 +72,7 @@ public class FSTIdentity2IdMap {
     }
 
     public int size() {
-        if ( linearScanList != null )
+        if (linearScanList != null)
             return linearScanList.size();
         return mNumberOfElements + (next != null ? next.size() : 0);
     }
@@ -82,11 +82,11 @@ public class FSTIdentity2IdMap {
         return putOrGetHash(key, value, hash, this, 0);
     }
 
-    final int putOrGetHash(Object key, int value, int hash, FSTIdentity2IdMap parent, int depth ) {
-        if ( linearScanList != null ) {
+    private int putOrGetHash(Object key, int value, int hash, FSTIdentity2IdMap parent, int depth) {
+        if (linearScanList != null) {
             for (int i = 0; i < linearScanList.size(); i++) {
                 Object o = linearScanList.get(i);
-                if ( o == key ) {
+                if (o == key) {
                     return linearScanVals.get(i);
                 }
             }
@@ -108,8 +108,7 @@ public class FSTIdentity2IdMap {
         }
 
         Object[] mKeys = this.mKeys;
-//        int idx = calcIndexFromHash(hash, mKeys);
-        int idx = calcIndexFromHash(hash, mKeys);
+        int idx = calcIndexFromHash(hash);
 
         Object mKeyAtIdx = mKeys[idx];
         if (mKeyAtIdx == null) // new
@@ -144,24 +143,24 @@ public class FSTIdentity2IdMap {
                 {
                     return mValues[idx + 2];
                 } else {
-                    return putOrGetNext(hash, key, value, depth+1);
+                    return putOrGetNext(hash, key, value, depth + 1);
                 }
             }
         }
     }
 
-    final int putOrGetNext(final int hash, final Object key, final int value, int depth) {
+    private int putOrGetNext(final int hash, final Object key, final int value, int depth) {
         if (next == null) { // new
             int newSiz = mKeys.length / 10;
             next = new FSTIdentity2IdMap(newSiz);
-            if ( depth > MAX_DEPTH ) {
+            if (depth > MAX_DEPTH) {
                 next.linearScanVals = new ArrayList<>(3);
                 next.linearScanList = new ArrayList<>(3);
             }
             next.putHash(key, value, hash, this, depth);
             return Integer.MIN_VALUE;
         }
-        return next.putOrGetHash(key, value, hash, this, depth+1);
+        return next.putOrGetHash(key, value, hash, this, depth + 1);
     }
 
     final public void put(Object key, int value) {
@@ -169,11 +168,11 @@ public class FSTIdentity2IdMap {
         putHash(key, value, hash, this, 0);
     }
 
-    final void putHash(Object key, int value, int hash, FSTIdentity2IdMap parent, int depth) {
-        if ( linearScanList != null ) {
+    private void putHash(Object key, int value, int hash, FSTIdentity2IdMap parent, int depth) {
+        if (linearScanList != null) {
             for (int i = 0; i < linearScanList.size(); i++) {
                 Object o = linearScanList.get(i);
-                if ( o == key ) {
+                if (o == key) {
                     linearScanVals.set(i, value);
                     return;
                 }
@@ -197,7 +196,7 @@ public class FSTIdentity2IdMap {
         }
 
         Object[] mKeys = this.mKeys;
-        int idx = calcIndexFromHash(hash, mKeys);
+        int idx = calcIndexFromHash(hash);
 
         if (mKeys[idx] == null) // new
         {
@@ -229,22 +228,22 @@ public class FSTIdentity2IdMap {
 //                    bloom|=hash;
                     mValues[idx + 2] = value;
                 } else {
-                    putNext(hash, key, value, depth+1);
+                    putNext(hash, key, value, depth + 1);
                 }
             }
         }
     }
 
-    final void putNext(final int hash, final Object key, final int value, int depth) {
+    private void putNext(final int hash, final Object key, final int value, int depth) {
         if (next == null) {
             int newSiz = mKeys.length / 10;
             next = new FSTIdentity2IdMap(newSiz);
-            if ( depth > MAX_DEPTH ) {
+            if (depth > MAX_DEPTH) {
                 next.linearScanVals = new ArrayList<>(3);
                 next.linearScanList = new ArrayList<>(3);
             }
         }
-        next.putHash(key, value, hash, this, depth+1);
+        next.putHash(key, value, hash, this, depth + 1);
     }
 
     final public int get(final Object key) {
@@ -252,18 +251,18 @@ public class FSTIdentity2IdMap {
         return getHash(key, hash);
     }
 
-    final int getHash(final Object key, final int hash) {
-        if ( linearScanList != null ) {
+    private int getHash(final Object key, final int hash) {
+        if (linearScanList != null) {
             for (int i = 0; i < linearScanList.size(); i++) {
                 Object o = linearScanList.get(i);
-                if ( o == key ) {
+                if (o == key) {
                     return linearScanVals.get(i);
                 }
             }
             return Integer.MIN_VALUE;
         }
 
-        final int idx = calcIndexFromHash(hash, mKeys);
+        final int idx = calcIndexFromHash(hash);
 
         Object mapsKey = mKeys[idx];
         if (mapsKey == null) // not found
@@ -298,7 +297,7 @@ public class FSTIdentity2IdMap {
         }
     }
 
-    final void resize(int newSize) {
+    private void resize(int newSize) {
         newSize = adjustSize(newSize);
         Object[] oldTabKey = mKeys;
         int[] oldTabVal = mValues;
@@ -322,7 +321,7 @@ public class FSTIdentity2IdMap {
     }
 
     private void rePut(FSTIdentity2IdMap kfstObject2IntMap) {
-        if ( linearScanList != null ) {
+        if (linearScanList != null) {
             int size = linearScanList.size();
             for (int i = 0; i < size; i++) {
                 Object key = linearScanList.get(i);
@@ -343,7 +342,7 @@ public class FSTIdentity2IdMap {
         }
     }
 
-    final int calcIndexFromHash(int hash, Object[] mKeys) {
+    private int calcIndexFromHash(int hash) {
         int res = hash & mask;
         while (res >= klen) {
             res = res >>> 1;
@@ -361,7 +360,7 @@ public class FSTIdentity2IdMap {
         if (size() == 0) {
             return;
         }
-        if ( linearScanList != null ) {
+        if (linearScanList != null) {
             linearScanList.clear();
             linearScanVals.clear();
         }
@@ -373,17 +372,6 @@ public class FSTIdentity2IdMap {
         if (next != null) {
             next.clear();
         }
-    }
-
-    public void dump() {
-        for (int i = 0; i < mKeys.length; i++) {
-            Object mKey = mKeys[i];
-            if (mKey != null) {
-                System.out.println("" + mKey + " => " + mValues[i]);
-            }
-        }
-        if (next != null)
-            next.dump();
     }
 
     public int keysLength() {

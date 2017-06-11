@@ -22,7 +22,7 @@ package org.nustaq.serialization;
  * Time: 12:09
  * To change this template use File | Settings | File Templates.
  */
-public abstract class FSTBasicObjectSerializer implements FSTCrossPlatformSerialzer {
+public abstract class FSTBasicObjectSerializer implements FSTObjectSerializer {
 
     protected FSTBasicObjectSerializer() {
     }
@@ -49,10 +49,6 @@ public abstract class FSTBasicObjectSerializer implements FSTCrossPlatformSerial
     @Override
     public Object instantiate(Class objectClass, FSTObjectInput in, FSTClazzInfo serializationInfo, FSTClazzInfo.FSTFieldInfo referencee, int streamPosition) throws Exception {
         return null;
-    }
-
-    public boolean writeTupleEnd() {
-        return true;
     }
 
 
