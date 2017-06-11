@@ -28,7 +28,6 @@ import org.nustaq.serialization.serializers.FSTMapSerializer;
 import org.nustaq.serialization.serializers.FSTStringBufferSerializer;
 import org.nustaq.serialization.serializers.FSTStringBuilderSerializer;
 import org.nustaq.serialization.serializers.FSTStringSerializer;
-import org.nustaq.serialization.util.FSTInputStream;
 import org.nustaq.serialization.util.FSTUtil;
 
 import java.io.IOException;
@@ -59,10 +58,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * User: ruedi
  * Date: 18.11.12
  * Time: 20:41
- *
+ * <p>
  * Holds a serialization configuration/metadata.
  * Reuse this class !!! construction is very expensive. (just keep static instances around or use thread locals)
- *
  */
 public class FSTConfiguration {
 
@@ -71,7 +69,7 @@ public class FSTConfiguration {
      * Can be used in case e.g. dynamic classes need get generated.
      */
     interface LastResortClassRessolver {
-        Class getClass( String clName );
+        Class getClass(String clName);
     }
 
     private final StreamCoderFactory streamCoderFactory = new FSTDefaultStreamCoderFactory(this);
@@ -79,14 +77,13 @@ public class FSTConfiguration {
     private String name;
 
     private final FSTClazzInfoRegistry serializationInfoRegistry = new FSTClazzInfoRegistry();
-    private final HashMap<Class,List<SoftReference>> cachedObjects = new HashMap<>(97);
+    private final HashMap<Class, List<SoftReference>> cachedObjects = new HashMap<>(97);
     private final FSTClazzNameRegistry classRegistry = new FSTClazzNameRegistry(null);
     boolean shareReferences = true;
     private volatile ClassLoader classLoader = getClass().getClassLoader();
     private boolean forceSerializable = false; // serialize objects which are not instanceof serializable using default serialization scheme.
     private FSTClassInstantiator instantiator = new FSTDefaultClassInstantiator();
 
-    private Object coderSpecific;
     private LastResortClassRessolver lastResortResolver;
 
     private boolean forceClzInit = false; // always execute default fields init, even if no transients
@@ -108,8 +105,7 @@ public class FSTConfiguration {
 
             FieldKey fieldKey = (FieldKey) o;
 
-            if (!clazz.equals(fieldKey.clazz)) return false;
-            return fieldName.equals(fieldKey.fieldName);
+            return clazz.equals(fieldKey.clazz) && fieldName.equals(fieldKey.fieldName);
 
         }
 
@@ -120,10 +116,12 @@ public class FSTConfiguration {
             return result;
         }
     }
-    final ConcurrentHashMap<FieldKey,FSTClazzInfo.FSTFieldInfo> fieldInfoCache;
+
+    final ConcurrentHashMap<FieldKey, FSTClazzInfo.FSTFieldInfo> fieldInfoCache;
 
     /**
      * debug helper
+     *
      * @return
      */
     public String getName() {
@@ -132,6 +130,7 @@ public class FSTConfiguration {
 
     /**
      * debug helper
+     *
      * @param name
      */
     public void setName(String name) {
@@ -143,8 +142,10 @@ public class FSTConfiguration {
 
     private static final AtomicBoolean conflock = new AtomicBoolean(false);
     private static FSTConfiguration singleton;
+
     public static FSTConfiguration getDefaultConfiguration() {
-        do { } while ( !conflock.compareAndSet(false, true) );
+        do {
+        } while (!conflock.compareAndSet(false, true));
         try {
             if (singleton == null)
                 singleton = createDefaultConfiguration();
@@ -159,10 +160,10 @@ public class FSTConfiguration {
      * - safe (no unsafe r/w)
      * - platform independent byte order
      * - moderate compression
-     *
+     * <p>
      * note that if you are just read/write from/to byte arrays, its faster
      * to use DefaultCoder.
-     *
+     * <p>
      * This should be used most of the time.
      *
      * @return
@@ -215,7 +216,7 @@ public class FSTConfiguration {
      * @param ser
      * @param alsoForAllSubclasses
      */
-    public void registerSerializer(Class clazz, FSTObjectSerializer ser, boolean alsoForAllSubclasses ) {
+    public void registerSerializer(Class clazz, FSTObjectSerializer ser, boolean alsoForAllSubclasses) {
         serializationInfoRegistry.getSerializerRegistry().putSerializer(clazz, ser, alsoForAllSubclasses);
     }
 
@@ -247,42 +248,27 @@ public class FSTConfiguration {
         return instantiator;
     }
 
-    public void setInstantiator(FSTClassInstantiator instantiator) {
-        this.instantiator = instantiator;
-    }
-
-    public <T> T getCoderSpecific() {
-        return (T) coderSpecific;
-    }
-
-    public void setCoderSpecific(Object coderSpecific) {
-        this.coderSpecific = coderSpecific;
-    }
-
-    public void setClassLoader(ClassLoader classLoader) {
-        this.classLoader = classLoader;
-    }
-
-    protected FSTConfiguration(ConcurrentHashMap<FieldKey,FSTClazzInfo.FSTFieldInfo> sharedFieldInfos) {
+    protected FSTConfiguration(ConcurrentHashMap<FieldKey, FSTClazzInfo.FSTFieldInfo> sharedFieldInfos) {
         this.fieldInfoCache = sharedFieldInfos;
     }
 
     /**
      * reuse heavy weight objects. If a FSTStream is closed, objects are returned and can be reused by new stream instances.
      * the objects are held in soft references, so there should be no memory issues. FIXME: point of contention !
+     *
      * @param cached
      */
-    public void returnObject( Object cached ) {
+    public void returnObject(Object cached) {
         try {
             while (!cacheLock.compareAndSet(false, true)) {
                 // empty
             }
             List<SoftReference> li = cachedObjects.get(cached.getClass());
-            if ( li == null ) {
+            if (li == null) {
                 li = new ArrayList<>();
-                cachedObjects.put(cached.getClass(),li);
+                cachedObjects.put(cached.getClass(), li);
             }
-            if ( li.size() < 5 )
+            if (li.size() < 5)
                 li.add(new SoftReference(cached));
         } finally {
             cacheLock.set(false);
@@ -292,27 +278,29 @@ public class FSTConfiguration {
     /**
      * patch default serializer lookup. set to null to delete.
      * Should be set prior to any serialization going on (serializer lookup is cached).
+     *
      * @param del
      */
-    public void setSerializerRegistryDelegate( FSTSerializerRegistryDelegate del ) {
+    public void setSerializerRegistryDelegate(FSTSerializerRegistryDelegate del) {
         serializationInfoRegistry.setSerializerRegistryDelegate(del);
     }
 
     private final AtomicBoolean cacheLock = new AtomicBoolean(false);
-    public Object getCachedObject( Class cl ) {
-        try  {
+
+    public Object getCachedObject(Class cl) {
+        try {
             while (!cacheLock.compareAndSet(false, true)) {
                 // empty
             }
             List<SoftReference> li = cachedObjects.get(cl);
-            if ( li == null ) {
+            if (li == null) {
                 return null;
             }
-            for (int i = li.size()-1; i >= 0; i--) {
+            for (int i = li.size() - 1; i >= 0; i--) {
                 SoftReference softReference = li.get(i);
                 Object res = softReference.get();
                 li.remove(i);
-                if ( res != null ) {
+                if (res != null) {
                     return res;
                 }
             }
@@ -328,35 +316,12 @@ public class FSTConfiguration {
 
     /**
      * treat unserializable classes same as if they would be serializable.
-     * @param forceSerializable
-//     */
+     *
+     * @param forceSerializable //
+     */
     public FSTConfiguration setForceSerializable(boolean forceSerializable) {
         this.forceSerializable = forceSerializable;
         return this;
-    }
-
-    /**
-     * clear global deduplication caches. Useful for class reloading scenarios, else counter productive as
-     * j.reflect.Fiwld + Construtors will be instantiated more than once per class.
-     */
-    public static void clearGlobalCaches() {
-        FSTClazzInfo.sharedFieldSets.clear();
-        FSTDefaultClassInstantiator.constructorMap.clear();
-    }
-
-    /**
-     * clear cached softref's and ThreadLocal.
-     */
-    public void clearCaches() {
-        try {
-            FSTInputStream.cachedBuffer.set(null);
-            while (!cacheLock.compareAndSet(false, true)) {
-                // empty
-            }
-            cachedObjects.clear();
-        } finally {
-            cacheLock.set( false );
-        }
     }
 
     public boolean isShareReferences() {
@@ -365,35 +330,32 @@ public class FSTConfiguration {
 
     /**
      * if false, identical objects will get serialized twice. Gains speed as long there are no double objects/cyclic references (typical for small snippets as used in e.g. RPC)
-     *
+     * <p>
      * Cycles and Objects referenced more than once will not be detected (if set to false).
      * Additionally JDK compatibility is not supported (read/writeObject and stuff). Use case is highperformance
      * serialization of plain cycle free data (e.g. messaging). Can perform significantly faster (20-40%).
      *
      * @param shareReferences
-     *
      */
     public void setShareReferences(boolean shareReferences) {
         this.shareReferences = shareReferences;
     }
 
     /**
-     *
      * Preregister a class (use at init time). This avoids having to write class names.
      * Its a very simple and effective optimization (frequently > 2 times faster for small objects).
-     *
+     * <p>
      * Read and write side need to have classes preregistered in the exact same order.
-     *
+     * <p>
      * The list does not have to be complete. Just add your most frequently serialized classes here
      * to get significant gains in speed and smaller serialized representation size.
-     *
      */
-    public void registerClass( Class ... c) {
+    public void registerClass(Class... c) {
         for (int i = 0; i < c.length; i++) {
-            classRegistry.registerClass(c[i],this);
+            classRegistry.registerClass(c[i], this);
             try {
-                Class ac = Class.forName("[L"+c[i].getName()+";");
-                classRegistry.registerClass(ac,this);
+                Class ac = Class.forName("[L" + c[i].getName() + ";");
+                classRegistry.registerClass(ac, this);
             } catch (ClassNotFoundException e) {
                 // silent
             }
@@ -401,62 +363,62 @@ public class FSTConfiguration {
     }
 
     private void addDefaultClazzes() {
-        classRegistry.registerClass(String.class,this);
-        classRegistry.registerClass(Byte.class,this);
-        classRegistry.registerClass(Short.class,this);
-        classRegistry.registerClass(Integer.class,this);
-        classRegistry.registerClass(Long.class,this);
-        classRegistry.registerClass(Float.class,this);
-        classRegistry.registerClass(Double.class,this);
-        classRegistry.registerClass(BigDecimal.class,this);
-        classRegistry.registerClass(BigInteger.class,this);
-        classRegistry.registerClass(Character.class,this);
-        classRegistry.registerClass(Boolean.class,this);
-        classRegistry.registerClass(TreeMap.class,this);
-        classRegistry.registerClass(HashMap.class,this);
-        classRegistry.registerClass(ArrayList.class,this);
-        classRegistry.registerClass(ConcurrentHashMap.class,this);
-        classRegistry.registerClass(URL.class,this);
-        classRegistry.registerClass(Date.class,this);
-        classRegistry.registerClass(java.sql.Date.class,this);
+        classRegistry.registerClass(String.class, this);
+        classRegistry.registerClass(Byte.class, this);
+        classRegistry.registerClass(Short.class, this);
+        classRegistry.registerClass(Integer.class, this);
+        classRegistry.registerClass(Long.class, this);
+        classRegistry.registerClass(Float.class, this);
+        classRegistry.registerClass(Double.class, this);
+        classRegistry.registerClass(BigDecimal.class, this);
+        classRegistry.registerClass(BigInteger.class, this);
+        classRegistry.registerClass(Character.class, this);
+        classRegistry.registerClass(Boolean.class, this);
+        classRegistry.registerClass(TreeMap.class, this);
+        classRegistry.registerClass(HashMap.class, this);
+        classRegistry.registerClass(ArrayList.class, this);
+        classRegistry.registerClass(ConcurrentHashMap.class, this);
+        classRegistry.registerClass(URL.class, this);
+        classRegistry.registerClass(Date.class, this);
+        classRegistry.registerClass(java.sql.Date.class, this);
         //classRegistry.registerClass(SimpleDateFormat.class,this);
-        classRegistry.registerClass(TreeSet.class,this);
-        classRegistry.registerClass(LinkedList.class,this);
+        classRegistry.registerClass(TreeSet.class, this);
+        classRegistry.registerClass(LinkedList.class, this);
         //classRegistry.registerClass(SimpleTimeZone.class,this);
         //classRegistry.registerClass(GregorianCalendar.class,this);
-        classRegistry.registerClass(Vector.class,this);
-        classRegistry.registerClass(Hashtable.class,this);
-        classRegistry.registerClass(BitSet.class,this);
-        classRegistry.registerClass(Locale.class,this);
+        classRegistry.registerClass(Vector.class, this);
+        classRegistry.registerClass(Hashtable.class, this);
+        classRegistry.registerClass(BitSet.class, this);
+        classRegistry.registerClass(Locale.class, this);
 
-        classRegistry.registerClass(StringBuffer.class,this);
-        classRegistry.registerClass(StringBuilder.class,this);
+        classRegistry.registerClass(StringBuffer.class, this);
+        classRegistry.registerClass(StringBuilder.class, this);
 
-        classRegistry.registerClass(Object.class,this);
-        classRegistry.registerClass(Object[].class,this);
-        classRegistry.registerClass(Object[][].class,this);
-        classRegistry.registerClass(Object[][][].class,this);
+        classRegistry.registerClass(Object.class, this);
+        classRegistry.registerClass(Object[].class, this);
+        classRegistry.registerClass(Object[][].class, this);
+        classRegistry.registerClass(Object[][][].class, this);
 
-        classRegistry.registerClass(byte[].class,this);
-        classRegistry.registerClass(byte[][].class,this);
+        classRegistry.registerClass(byte[].class, this);
+        classRegistry.registerClass(byte[][].class, this);
 
-        classRegistry.registerClass(char[].class,this);
-        classRegistry.registerClass(char[][].class,this);
+        classRegistry.registerClass(char[].class, this);
+        classRegistry.registerClass(char[][].class, this);
 
-        classRegistry.registerClass(short[].class,this);
-        classRegistry.registerClass(short[][].class,this);
+        classRegistry.registerClass(short[].class, this);
+        classRegistry.registerClass(short[][].class, this);
 
-        classRegistry.registerClass(int[].class,this);
-        classRegistry.registerClass(int[][].class,this);
+        classRegistry.registerClass(int[].class, this);
+        classRegistry.registerClass(int[][].class, this);
 
-        classRegistry.registerClass(float[].class,this);
-        classRegistry.registerClass(float[][].class,this);
+        classRegistry.registerClass(float[].class, this);
+        classRegistry.registerClass(float[][].class, this);
 
-        classRegistry.registerClass(double[].class,this);
-        classRegistry.registerClass(double[][].class,this);
+        classRegistry.registerClass(double[].class, this);
+        classRegistry.registerClass(double[][].class, this);
 
-        classRegistry.registerClass(long[].class,this);
-        classRegistry.registerClass(long[][].class,this);
+        classRegistry.registerClass(long[].class, this);
+        classRegistry.registerClass(long[][].class, this);
 
     }
 
@@ -474,20 +436,20 @@ public class FSTConfiguration {
 
     /**
      * take the given array as input. the array is NOT copied.
-     *
+     * <p>
      * WARNING: the input streams takes over ownership and might overwrite content
      * of this array in subsequent IO operations.
      *
      * @param arr
      * @return
      */
-    public FSTObjectInput getObjectInput( byte arr[]) {
+    public FSTObjectInput getObjectInput(byte arr[]) {
         return getObjectInput(arr, arr.length);
     }
 
     /**
      * take the given array as input. the array is NOT copied.
-     *
+     * <p>
      * WARNING: the input streams takes over ownership and might overwrite content
      * of this array in subsequent IO operations.
      *
@@ -495,10 +457,10 @@ public class FSTConfiguration {
      * @param len
      * @return
      */
-    public FSTObjectInput getObjectInput( byte arr[], int len ) {
+    public FSTObjectInput getObjectInput(byte arr[], int len) {
         FSTObjectInput fstObjectInput = getIn();
         try {
-            fstObjectInput.resetForReuseUseArray(arr,len);
+            fstObjectInput.resetForReuseUseArray(arr, len);
             return fstObjectInput;
         } catch (IOException e) {
             FSTUtil.<RuntimeException>rethrow(e);
@@ -509,7 +471,7 @@ public class FSTConfiguration {
 
     protected FSTObjectInput getIn() {
         FSTObjectInput fstObjectInput = (FSTObjectInput) streamCoderFactory.getInput().get();
-        if ( fstObjectInput == null ) {
+        if (fstObjectInput == null) {
             streamCoderFactory.getInput().set(new FSTObjectInput(this));
             return getIn();
         }
@@ -520,7 +482,7 @@ public class FSTConfiguration {
 
     protected FSTObjectOutput getOut() {
         FSTObjectOutput fstOut = (FSTObjectOutput) streamCoderFactory.getOutput().get();
-        if ( fstOut == null || fstOut.closed ) {
+        if (fstOut == null || fstOut.closed) {
             streamCoderFactory.getOutput().set(new FSTObjectOutput(this));
             return getOut();
         }
@@ -532,6 +494,7 @@ public class FSTConfiguration {
     /**
      * utility for thread safety and reuse. Do not close the resulting stream. However you should close
      * the given OutputStream 'out'
+     *
      * @param out - can be null (temp bytearrays stream is created then)
      * @return
      */
@@ -545,7 +508,7 @@ public class FSTConfiguration {
      * @return a recycled outputstream reusing its last recently used byte[] buffer
      */
     public FSTObjectOutput getObjectOutput() {
-        return getObjectOutput((OutputStream)null);
+        return getObjectOutput((OutputStream) null);
     }
 
     /**
@@ -561,6 +524,7 @@ public class FSTConfiguration {
 
     /**
      * special for structs
+     *
      * @return
      */
     public boolean isStructMode() {
@@ -569,8 +533,11 @@ public class FSTConfiguration {
 
     public interface StreamCoderFactory {
         FSTEncoder createStreamEncoder();
+
         FSTDecoder createStreamDecoder();
+
         ThreadLocal getInput();
+
         ThreadLocal getOutput();
     }
 
@@ -585,11 +552,11 @@ public class FSTConfiguration {
     /**
      * convenience
      */
-    public Object asObject( byte b[] ) {
+    public Object asObject(byte b[]) {
         try {
             return getObjectInput(b).readObject();
         } catch (Exception e) {
-            System.out.println("unable to decode:" +new String(b,0,0,Math.min(b.length,100)) );
+            System.out.println("unable to decode:" + new String(b, 0, 0, Math.min(b.length, 100)));
             FSTUtil.<RuntimeException>rethrow(e);
         }
         return null;
@@ -598,7 +565,7 @@ public class FSTConfiguration {
     /**
      * convenience. (object must be serializable)
      */
-    public byte[] asByteArray( Object object ) {
+    public byte[] asByteArray(Object object) {
         FSTObjectOutput objectOutput = getObjectOutput();
         try {
             objectOutput.writeObject(object);
@@ -614,11 +581,11 @@ public class FSTConfiguration {
      * The returned byteArray is a direct pointer to underlying buffer.
      * the int length[] is expected to have at least on element.
      * The buffer can be larger than written data, therefore length[0] will contain written length.
-     *
+     * <p>
      * The buffer content must be used (e.g. sent to network, copied to offheap) before doing another
      * asByteArray on the current Thread.
      */
-    public byte[] asSharedByteArray( Object object, int length[] ) {
+    public byte[] asSharedByteArray(Object object, int length[]) {
         FSTObjectOutput objectOutput = getObjectOutput();
         try {
             objectOutput.writeObject(object);
@@ -633,14 +600,16 @@ public class FSTConfiguration {
     @Override
     public String toString() {
         return "FSTConfiguration{" +
-                   "name='" + name + '\'' +
-                   '}';
+                "name='" + name + '\'' +
+                '}';
     }
 
     private static class FSTDefaultStreamCoderFactory implements FSTConfiguration.StreamCoderFactory {
         private final FSTConfiguration fstConfiguration;
 
-        FSTDefaultStreamCoderFactory(FSTConfiguration fstConfiguration) {this.fstConfiguration = fstConfiguration;}
+        FSTDefaultStreamCoderFactory(FSTConfiguration fstConfiguration) {
+            this.fstConfiguration = fstConfiguration;
+        }
 
         @Override
         public FSTEncoder createStreamEncoder() {
