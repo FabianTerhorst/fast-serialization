@@ -61,11 +61,7 @@ public class FSTObject2IntMap<K> {
         this.checkClazzOnEquals = checkClassOnequals;
     }
 
-    public int size() {
-        return mNumberOfElements + (next != null ? next.size() : 0);
-    }
-
-    final public void put(K key, int value) {
+    private void put(K key, int value) {
         int hash = key.hashCode() & 0x7FFFFFFF;
         putHash(key, value, hash, this);
     }

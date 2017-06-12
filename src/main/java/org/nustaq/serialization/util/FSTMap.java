@@ -36,10 +36,6 @@ public class FSTMap<K, V> {
         mNumberOfElements = 0;
     }
 
-    public int size() {
-        return mNumberOfElements + (next != null ? next.size() : 0);
-    }
-
     final public void put(K key, V value) {
         int hash = key.hashCode() & 0x7FFFFFFF;
         putHash(key, value, hash, this);

@@ -43,10 +43,6 @@ class FSTSerializerRegistry {
         }
 
         @Override
-        public void readObject(FSTObjectInput out, Object toWrite, FSTClazzInfo clzInfo, FSTClazzInfo.FSTFieldInfo referencedBy) throws Exception {
-        }
-
-        @Override
         public boolean willHandleClass(Class cl) {
             return true;
         }

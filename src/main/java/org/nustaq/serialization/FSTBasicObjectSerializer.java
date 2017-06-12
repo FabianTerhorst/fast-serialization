@@ -32,10 +32,6 @@ public abstract class FSTBasicObjectSerializer implements FSTObjectSerializer {
         return true;
     }
 
-    @Override
-    public void readObject(FSTObjectInput in, Object toRead, FSTClazzInfo clzInfo, FSTClazzInfo.FSTFieldInfo referencedBy) throws Exception {
-    }
-
     /**
      * @return true if FST can skip a search for same instances in the serialized ObjectGraph. This speeds up reading and writing and makes
      *         sense for short immutable such as Integer, Short, Character, Date, .. . For those classes it is more expensive (CPU, size) to do a lookup than to just

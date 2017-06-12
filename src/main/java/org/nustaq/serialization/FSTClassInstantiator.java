@@ -20,7 +20,7 @@ import java.lang.reflect.Constructor;
 /**
  * Created by ruedi on 12.12.14.
  */
-public interface FSTClassInstantiator {
+interface FSTClassInstantiator {
 
     Object newInstance(Class clazz, Constructor cons, boolean doesRequireInit, boolean unsafeAsLastResort);
     Constructor findConstructorForExternalize(Class clazz);
