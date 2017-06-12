@@ -96,18 +96,6 @@ public final class FSTInputStream extends InputStream {
         }
     }
 
-    public FSTInputStream(byte buf[]) {
-        this.buf = buf;
-        this.pos = 0;
-        this.count = buf.length;
-    }
-
-    public FSTInputStream(byte buf[], int offset, int length) {
-        this.buf = buf;
-        this.pos = offset;
-        this.count = Math.min(offset + length, buf.length);
-    }
-
     public int read() {
         if (pos < count) {
             return (buf[pos++] & 0xff);

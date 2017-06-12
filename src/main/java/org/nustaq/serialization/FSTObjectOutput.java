@@ -51,7 +51,7 @@ public class FSTObjectOutput implements ObjectOutput {
     static final byte OBJECT = 0;
     private FSTEncoder codec;
 
-    protected FSTConfiguration conf; // immutable, should only be set by FSTConf mechanics
+    FSTConfiguration conf; // immutable, should only be set by FSTConf mechanics
 
     private FSTObjectRegistry objects;
     private int curDepth = 0;
@@ -79,7 +79,7 @@ public class FSTObjectOutput implements ObjectOutput {
      * @param out the underlying output stream, to be saved for later
      *            use.
      */
-    public FSTObjectOutput(OutputStream out, FSTConfiguration conf) {
+    private FSTObjectOutput(OutputStream out, FSTConfiguration conf) {
         this.conf = conf;
         setCodec(conf.createStreamEncoder());
         getCodec().setOutstream(out);
@@ -237,7 +237,7 @@ public class FSTObjectOutput implements ObjectOutput {
     // .. end interface impl
     /////////////////////////////////////////////////////
 
-    public void writeObject(Object obj, Class... possibles) throws IOException {
+    private void writeObject(Object obj, Class... possibles) throws IOException {
         curDepth++;
         if (possibles != null && possibles.length > 1) {
             for (int i = 0; i < possibles.length; i++) {

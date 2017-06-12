@@ -66,7 +66,7 @@ public class FSTObjectInput implements ObjectInput {
     private boolean ignoreAnnotations;
     private FSTClazzInfoRegistry clInfoRegistry;
 
-    protected FSTConfiguration conf;
+    FSTConfiguration conf;
 
     public FSTConfiguration getConf() {
         return conf;
@@ -157,7 +157,7 @@ public class FSTObjectInput implements ObjectInput {
         this.codec = codec;
     }
 
-    protected static class CallbackEntry {
+    static class CallbackEntry {
         final ObjectInputValidation cb;
         final int prio;
 
@@ -194,7 +194,7 @@ public class FSTObjectInput implements ObjectInput {
      *
      * @param in the specified input stream
      */
-    public FSTObjectInput(InputStream in, FSTConfiguration conf) {
+    private FSTObjectInput(InputStream in, FSTConfiguration conf) {
         setCodec(conf.createStreamDecoder());
         getCodec().setInputStream(in);
         initRegistries(conf);
@@ -482,8 +482,6 @@ public class FSTObjectInput implements ObjectInput {
             if (!referencee.isFlat() && !clzSerInfo.isFlat() && !ser.alwaysCopy()) {
                 objects.registerObjectForRead(newObj, readPos);
             }
-            if (!serInstance)
-                ser.readObject(this, newObj, clzSerInfo, referencee);
         }
         return newObj;
     }

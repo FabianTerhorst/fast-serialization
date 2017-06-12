@@ -18,7 +18,7 @@ package org.nustaq.serialization;
 /**
  * interface to patch default serializer lookup. Can be set at FSTConfiguration
  */
-public interface FSTSerializerRegistryDelegate {
+interface FSTSerializerRegistryDelegate {
     /**
      * @param cl
      * @return null for default lookup or a serializer for given class

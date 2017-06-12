@@ -39,12 +39,6 @@ public interface FSTObjectSerializer {
             throws IOException;
 
     /**
-     * read the content to an already instantiated object
-     */
-    void readObject(FSTObjectInput in, Object toRead, FSTClazzInfo clzInfo, FSTClazzInfo.FSTFieldInfo referencedBy)
-            throws Exception;
-
-    /**
      * useful if you register for a class and its subclasses, but want to exclude a specific subclass
      */
     boolean willHandleClass(Class cl);

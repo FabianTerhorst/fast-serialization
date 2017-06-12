@@ -63,7 +63,7 @@ public final class FSTClazzInfo {
      */
     private static final ConcurrentHashMap<Class, Field[]> sharedFieldSets = new ConcurrentHashMap<>();
 
-    static final Comparator<FSTFieldInfo> defFieldComparator = new Comparator<FSTFieldInfo>() {
+    private static final Comparator<FSTFieldInfo> defFieldComparator = new Comparator<FSTFieldInfo>() {
         @Override
         public int compare(FSTFieldInfo o1, FSTFieldInfo o2) {
             int res = 0;

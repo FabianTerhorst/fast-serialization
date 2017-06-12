@@ -244,11 +244,11 @@ public class FSTConfiguration {
         return this;
     }
 
-    public FSTClassInstantiator getInstantiator(Class clazz) {
+    FSTClassInstantiator getInstantiator(Class clazz) {
         return instantiator;
     }
 
-    protected FSTConfiguration(ConcurrentHashMap<FieldKey, FSTClazzInfo.FSTFieldInfo> sharedFieldInfos) {
+    private FSTConfiguration(ConcurrentHashMap<FieldKey, FSTClazzInfo.FSTFieldInfo> sharedFieldInfos) {
         this.fieldInfoCache = sharedFieldInfos;
     }
 
@@ -469,7 +469,7 @@ public class FSTConfiguration {
     }
 
 
-    protected FSTObjectInput getIn() {
+    private FSTObjectInput getIn() {
         FSTObjectInput fstObjectInput = (FSTObjectInput) streamCoderFactory.getInput().get();
         if (fstObjectInput == null) {
             streamCoderFactory.getInput().set(new FSTObjectInput(this));
@@ -480,7 +480,7 @@ public class FSTConfiguration {
         return fstObjectInput;
     }
 
-    protected FSTObjectOutput getOut() {
+    private FSTObjectOutput getOut() {
         FSTObjectOutput fstOut = (FSTObjectOutput) streamCoderFactory.getOutput().get();
         if (fstOut == null || fstOut.closed) {
             streamCoderFactory.getOutput().set(new FSTObjectOutput(this));
@@ -508,7 +508,7 @@ public class FSTConfiguration {
      * @return a recycled outputstream reusing its last recently used byte[] buffer
      */
     public FSTObjectOutput getObjectOutput() {
-        return getObjectOutput((OutputStream) null);
+        return getObjectOutput(null);
     }
 
     /**
