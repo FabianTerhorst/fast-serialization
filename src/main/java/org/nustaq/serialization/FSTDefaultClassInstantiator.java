@@ -110,9 +110,7 @@ public class FSTDefaultClassInstantiator implements FSTClassInstantiator {
             if (FSTClazzInfo.BufferConstructorMeta)
                 constructorMap.put(clazz, c);
             return c;
-        } catch (NoClassDefFoundError cle) {
-            return null;
-        } catch (NoSuchMethodException ex) {
+        } catch (NoClassDefFoundError | NoSuchMethodException cle) {
             return null;
         }
     }

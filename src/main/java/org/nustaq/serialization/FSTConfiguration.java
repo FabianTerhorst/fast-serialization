@@ -74,8 +74,6 @@ public class FSTConfiguration {
 
     private final StreamCoderFactory streamCoderFactory = new FSTDefaultStreamCoderFactory(this);
 
-    private String name;
-
     private final FSTClazzInfoRegistry serializationInfoRegistry = new FSTClazzInfoRegistry();
     private final HashMap<Class, List<SoftReference>> cachedObjects = new HashMap<>(97);
     private final FSTClazzNameRegistry classRegistry = new FSTClazzNameRegistry(null);
@@ -118,24 +116,6 @@ public class FSTConfiguration {
     }
 
     final ConcurrentHashMap<FieldKey, FSTClazzInfo.FSTFieldInfo> fieldInfoCache;
-
-    /**
-     * debug helper
-     *
-     * @return
-     */
-    public String getName() {
-        return name;
-    }
-
-    /**
-     * debug helper
-     *
-     * @param name
-     */
-    public void setName(String name) {
-        this.name = name;
-    }
 
     // end cross platform stuff only
     /////////////////////////////////////
@@ -599,9 +579,7 @@ public class FSTConfiguration {
 
     @Override
     public String toString() {
-        return "FSTConfiguration{" +
-                "name='" + name + '\'' +
-                '}';
+        return "FSTConfiguration";
     }
 
     private static class FSTDefaultStreamCoderFactory implements FSTConfiguration.StreamCoderFactory {
